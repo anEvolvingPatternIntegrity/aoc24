@@ -11,6 +11,7 @@ pom.xml.asc
 *.jar
 *.class
 /.lein-*
+.nrepl-port
 /.nrepl-port
 /.prepl-port
 /.cpcache
@@ -20,3 +21,4 @@ input
 *.test
 test*
 *.dump
+*.test.*
