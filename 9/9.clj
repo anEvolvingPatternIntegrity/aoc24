@@ -1,5 +1,3 @@
-#! /usr/bin/env bb
-
 (ns aoc-2024-12-9
   (:require [clojure.string :as str]))
 
@@ -76,8 +74,8 @@
         strvec (str/split zeroed #"")
         nums (map read-string strvec)]
     (checksum nums)))
-(println "part 1 test checksum: " (part1 "input.test"))
-(println "part 1 checksum: " (part1 "input"))
+;(println "part 1 test checksum: " (part1 "input.test"))
+;(println "part 1 checksum: " (part1 "input"))
 (println "part 2 test checksum: " (part2 "input.test"))
 (println "part 2 checksum: " (part2 "input"))
 
