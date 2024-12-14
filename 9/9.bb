@@ -14,11 +14,11 @@
         indexed (map-indexed vector input)]
     (mapcat ->block indexed)))
 
-(defn reversed-non-empty [blocks]
+(defn non-empty-reversed [blocks]
   (filter #(not= % ".") (reverse blocks)))
 
 (defn compact [blocks]
-  (let [reversed (reversed-non-empty blocks)]
+  (let [reversed (non-empty-reversed blocks)]
     (loop [bs blocks
            rs reversed
            acc []
@@ -32,21 +32,11 @@
             (recur (rest bs) (rest rs) (conj acc r) (inc cnt))
             (recur (rest bs) (butlast rs) (conj acc c) (inc cnt))))))))
 
-(defn checksum [filename]
-  (->> (input filename)
-       ->blocks
-       compact
+(defn checksum [blocks]
+  (->> blocks
        (map-indexed vector)
        (map #(apply * %))
        (reduce +)))
-
-;(println "part 1 test checksum: " (checksum "input.test"))
-;(println "part 1 checksum: " (checksum "input"))
-;
-(def rnebs (reversed-non-empty (->blocks (input "input.test"))))
-(println rnebs)
-(def rnebs-pbi (partition-by identity rnebs))
-(def compblockstr (str/join (->blocks (input "input.test"))))
 
 (defn swap-blocks [all-blocks-str block]
   (let [block-size (count block)
@@ -56,16 +46,33 @@
         block-replace-regex (re-pattern block-str)
         dot-replace-regex (re-pattern (str/join (take block-size (repeat "\\."))))
         ]
-    (println {:bs block-size :block block-str :mr match-regex :brr block-replace-regex
+    #_(println {:bs block-size :block block-str :mr match-regex :brr block-replace-regex
               :drr dot-replace-regex})
     (if (re-find match-regex all-blocks-str)
       (-> all-blocks-str
           (str/replace-first block-replace-regex dot-str)
-          (str/replace-first dot-replace-regex block-str)
-          )
-      all-blocks-str
-      )
-    )
-  )
+          (str/replace-first dot-replace-regex block-str))
+      all-blocks-str)))
 
-(-> compblockstr (swap-blocks '(9 9)) (swap-blocks '(8 8 8 8)) (swap-blocks '(7 7 7)))
+(defn part1 [filename]
+  (->> (input filename)
+       ->blocks
+       compact
+       checksum))
+
+(defn part2 [filename]
+  (let [blocks (->blocks (input filename))
+        blocks-str (str/join blocks)
+        to-move (->> blocks
+                     non-empty-reversed
+                     (partition-by identity))
+        arranged (reduce swap-blocks blocks-str to-move)
+        zeroed (str/replace arranged #"\." "0")
+        strvec (str/split zeroed #"")
+        nums (map read-string strvec)]
+    (checksum nums)))
+
+;(println "part 1 test checksum: " (part1 "input.test"))
+;(println "part 1 checksum: " (part1 "input"))
+;(println "part 2 test checksum: " (part2 "input.test"))
+(println "part 2 checksum: " (part2 "input"))
