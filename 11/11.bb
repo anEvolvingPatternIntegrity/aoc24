@@ -40,4 +40,4 @@
   (let [ns (map read-string (str/split (slurp filename) #"\s"))]
     (num-after-blinks ns times)))
 
-(solve "input" 75)
+;;(solve "input" 75)
