@@ -34,8 +34,8 @@
          cnt 0]
     (let [val (get-in grid pos)
           neighbors (set (remove visited (mapcat #(neighbors-w-val grid % val) to-check)))]
-      (println "Val: " val " Neighbors:" neighbors " Region: " region " Visited: " visited " cnt: " cnt)
-      (if (or (> cnt 10) (empty? neighbors))
+      ;(println "Val: " val " Neighbors:" neighbors " Region: " region " Visited: " visited " cnt: " cnt)
+      (if (empty? neighbors)
         {:region region
          ;:entry pos
          :visited visited}
@@ -43,19 +43,29 @@
 
 (defn add-region [grid]
   (fn [m pos]
-    (let [{:keys [region visited]} (->region grid pos (:visited m))
+    (if ((:visited m) pos)
+      m
+      (let [{:keys [region visited]} (->region grid pos (:visited m))]
+        (if (pos? (count region))
+          (-> m
+              (assoc-in [:regions pos] region)
+              (update :visited clojure.set/union visited))
+          m)))))
 
-          ]
-      (if (pos? (count region))
-        (-> m
-            (assoc-in [regions pos] region)
-            (update :visited clojure.set/union visited))
-        m))))
+(defn score-perimeter [grid]
+  (fn [pos]
+    (- 4 (count (neighbors-w-val grid pos (get-in grid pos))))))
 
-(defn regions [grid]
+(defn score [grid]
   (let [cells (for [row (range (count grid)) col (range (count (get grid 0)))] [row col])
-        regions (reduce (add-region grid) {} cells)
+        regions (:regions (reduce (add-region grid) {:visited #{}} cells))
+        perimeter #(reduce + (map (score-perimeter grid) %))
+        scores (map #(* (count %) (perimeter %)) (vals regions))
         ]
-    (println regions)
-    )
-  )
+    {;:area area
+     ;:regions regions
+     :score (reduce + scores)
+     ;:perimeter perimeter
+     ;:price (* area perimeter)
+     }
+    ))
